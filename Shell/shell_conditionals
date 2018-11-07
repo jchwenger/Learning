@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# read -p "Age? " age
+
+# if [ $age -ge 16 ]
+# then
+#     echo "fucking right $age"
+# elif [ $age -eq 15 ]
+# then
+#     echo "cunting wrong age"
+# else
+#     echo "BOOM undergit!"
+# fi
+
+read -p "Num? " num
+
+# eq: ==, ne: !=, le: <=, lt: <, ge: >=, gt > 
+
+if ((num == 10)); then
+    echo "Bullshit 10"
+fi
+
+if ((num > 10)); then
+    echo "Greater than fucking 10"
+elif ((num < 10));then
+    echo "Less than shitting 10"
+fi
+    
+if (( (( num % 2 )) == 0 )); then
+    echo "Number even"
+fi
+
+if (( ((num > 0)) && ((num < 11)) ));
+then 
+    echo "$num is between 1 and 10"
+fi
+
+touch num_file && vim num_file
+
+[ -d numdir] || mkdir numdir

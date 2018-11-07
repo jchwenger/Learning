@@ -1,0 +1,17 @@
+#!/bin/bash
+
+name="Jezz"
+
+echo "${name}'s digs"
+
+sample_string="The dog climbed the tree"
+
+echo "${sample_string//dog/cat}"
+
+echo "I am ${name1:-Chill}"
+echo "name is ${name1} (= undefined)"
+
+echo "I am ${name1:=Chill}"
+echo "name is now ${name1} (= has been assigned)"
+
+

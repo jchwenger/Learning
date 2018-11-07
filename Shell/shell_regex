@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# read -p "Validate Date: " date
+# 
+# pat="^[0-9]{8}$"
+# 
+# if [[ $date =~ $pat ]]; then
+#     echo "$date is valid"
+# else
+#     echo "$date bullshit"
+# fi
+
+# read -p "2 Nums: " num1 num2
+# 
+# sum=$((num1+num2))
+# 
+# echo "$num1 + $num2 = $sum"
+
+# read -sp "Enter secret fcking code: " secret
+# 
+# password="cunt"
+# 
+# if [ "$secret" == "$password" ]; then
+#     echo "Enter"
+# else
+#     echo "Wrong"
+# fi
+
+
