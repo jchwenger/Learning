@@ -1,5 +1,5 @@
 # ignore vim files
-.swp
+**/*.swp
 
 # ignore Jupyter Notebooks checkpoints
 **/*.ipynb_checkpoints
