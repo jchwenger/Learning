@@ -1,2 +1,2 @@
-model_checkpoint_path: "/media/default/linux-data/learning2/TensorFlow/bits/saveable.ckpt"
-all_model_checkpoint_paths: "/media/default/linux-data/learning2/TensorFlow/bits/saveable.ckpt"
+model_checkpoint_path: "dummy_keras"
+all_model_checkpoint_paths: "dummy_keras"
