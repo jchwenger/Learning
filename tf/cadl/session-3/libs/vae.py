@@ -41,7 +41,7 @@ def VAE(input_shape=[None, 784],
     filter_sizes : list, optional
         Only applied when convolutional=True.  This refers to the ksize (height
         and width) of each convolutional layer.
-    n_hidden : int, optional
+        n_hidden : int, optional
         Only applied when variational=True.  This refers to the first fully
         connected layer prior to the variational embedding, directly after
         the encoding.  After the variational embedding, another fully connected
