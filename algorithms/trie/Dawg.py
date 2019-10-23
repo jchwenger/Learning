@@ -23,11 +23,11 @@ import time
 
 class DawgNode:
 
-    NextId = 0
+    next_id = 0
 
     def __init__(self):
-        self.id = DawgNode.NextId
-        DawgNode.NextId += 1
+        self.id = DawgNode.next_id
+        DawgNode.next_id += 1
         self.final = False
         self.edges = {}
 
@@ -53,7 +53,7 @@ class DawgNode:
     def __eq__(self, other):
         return self.__str__() == other.__str__()
 
-    def numReachable(self):
+    def num_reachable(self):
 
         # if a count is already assigned, return it
         if self.count: return self.count
@@ -63,7 +63,7 @@ class DawgNode:
         count = 0
         if self.final: count += 1
         for label, node in self.edges.items():
-            count += node.numReachable()
+            count += node.num_reachable() # recursively thru reachable nodes
         self.count = count
         return count
 
@@ -71,70 +71,71 @@ class Dawg:
 
     def __init__(self):
 
-        self.previousWord = ""
+        self.previous_word = ""
         self.root = DawgNode()
 
         # Here is a list of nodes that have not been checked for duplication.
-        self.uncheckedNodes = []
+        self.unchecked_nodes = []
 
         # Here is a list of unique nodes that have been checked for
         # duplication.
-        self.minimizedNodes = {}
+        self.minimized_nodes = {}
 
         # Here is the data associated with all the nodes
         self.data = []
 
     def insert(self, word, data):
 
-        if word <= self.previousWord:
-            raise Exception("Error: Words must be inserted in alphabetical order.")
+        assert word >= self.previous_word, "Error: Words must be inserted in alphabetical order."
 
         # find common prefix between word and previous word
-        commonPrefix = 0
-        for i in range(min(len(word), len(self.previousWord))):
-            if word[i] != self.previousWord[i]: break
-            commonPrefix += 1
+        common_prefix = 0
+        # loop over shorter word
+        for i in range(min(len(word), len(self.previous_word))):
+            if word[i] != self.previous_word[i]: break
+            common_prefix += 1
 
-        # Check the uncheckedNodes for redundant nodes, proceeding from last
+        # Check the unchecked_nodes for redundant nodes, proceeding from last
         # one down to the common prefix size. Then truncate the list at that
         # point.
-        self._minimize(commonPrefix)
+        self._minimize(common_prefix)
         self.data.append(data)
 
         # add the suffix, starting from the correct node mid-way through the
         # graph
-        if len(self.uncheckedNodes) == 0:
+        if len(self.unchecked_nodes) == 0:
             node = self.root
         else:
-            node = self.uncheckedNodes[-1][2]
+            node = self.unchecked_nodes[-1][2]
 
-        for letter in word[commonPrefix:]:
-            nextNode = DawgNode()
-            node.edges[letter] = nextNode
-            self.uncheckedNodes.append((node, letter, nextNode))
-            node = nextNode
+        # create new node, add to edges & to list of unchecked nodes
+        # move to new node and repeat until end of word
+        for letter in word[common_prefix:]:
+            next_node = DawgNode()
+            node.edges[letter] = next_node
+            self.unchecked_nodes.append((node, letter, next_node))
+            node = next_node
 
         node.final = True
-        self.previousWord = word
+        self.previous_word = word
 
+    # minimize all unchecked_nodes, then
+    # go through entire structure and assign the counts to each node.
     def finish(self):
-        # minimize all uncheckedNodes
         self._minimize(0);
+        self.root.num_reachable()
 
-        # go through entire structure and assign the counts to each node.
-        self.root.numReachable()
-
-    def _minimize(self, downTo):
+    def _minimize(self, down_to):
         # proceed from the leaf up to a certain point
-        for i in range(len(self.uncheckedNodes) - 1, downTo - 1, -1):
-            (parent, letter, child) = self.uncheckedNodes[i];
-            if child in self.minimizedNodes:
+        for i in range(len(self.unchecked_nodes) - 1, down_to - 1, -1):
+            (parent, letter, child) = self.unchecked_nodes[i];
+            if child in self.minimized_nodes:
                 # replace the child with the previously encountered one
-                parent.edges[letter] = self.minimizedNodes[child]
+                parent.edges[letter] = self.minimized_nodes[child]
             else:
                 # add the state to the minimized nodes.
-                self.minimizedNodes[child] = child;
-            self.uncheckedNodes.pop()
+                self.minimized_nodes[child] = child;
+            self.unchecked_nodes.pop()
 
     def lookup(self, word):
         node = self.root
@@ -143,20 +144,22 @@ class Dawg:
             if letter not in node.edges: return None
             for label, child in sorted(node.edges.items()):
                 if label == letter:
+                    # seen a word ending, save
                     if node.final: skipped += 1
+                    # move to next node
                     node = child
-                    break
+                    break # > move back to letter loop in word
                 skipped += child.count
 
         if node.final:
-            return self.data[skipped]
+            return self.data[skipped] 
 
-    def nodeCount(self):
-        return len(self.minimizedNodes)
+    def node_count(self):
+        return len(self.minimized_nodes)
 
-    def edgeCount(self):
+    def edge_count(self):
         count = 0
-        for node in self.minimizedNodes:
+        for node in self.minimized_nodes:
             count += len(node.edges)
         return count
 
@@ -185,6 +188,7 @@ if __name__ == '__main__':
         for w in f.read().split():
             words.append(w.rstrip())
     words.sort()
+
     start = time.time()
     for word in words:
         WordCount += 1
@@ -195,17 +199,18 @@ if __name__ == '__main__':
 
     dawg.display()
     dawg.finish()
+    print('-'*40)
     print("Dawg creation took {0} s".format(time.time()-start))
 
-    EdgeCount = dawg.edgeCount()
+    edge_count = dawg.edge_count()
     print("Read {0} words into {1} nodes and {2} edges".format(
-        WordCount, dawg.nodeCount(), EdgeCount))
+        WordCount, dawg.node_count(), edge_count))
 
-    print("This could be stored in as little as {0} bytes".format(EdgeCount * 4))
+    print("This could be stored in as little as {0} bytes".format(edge_count * 4))
 
     for word in QUERY:
         result = dawg.lookup(word)
         if result == None:
-            print("{0} not in dictionary.".format(word))
+            print("{0}? Not in dictionary.".format(word))
         else:
-            print("{0} is in the dictionary and has data {1}".format(word, result))
+            print("{0}? In the dictionary and has data {1}".format(word, result))
