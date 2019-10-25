@@ -26,62 +26,7 @@ class DawgNode:
     next_id = 0
 
     def __init__(self):
-        self.id = DawgNode.next_id
-        DawgNode.next_id += 1
-        self.final = False
-        self.edges = {}
-
-        # Number of end nodes reachable from this one.
-        self.count = 0
-
-    def __str__(self):
-        arr = []
-        if self.final:
-            arr.append("1")
-        else:
-            arr.append("0")
-
-        for (label, node) in self.edges.items():
-            arr.append(label)
-            arr.append(str(node.id))
-
-        return "_".join(arr)
-
-    def __hash__(self):
-        return self.__str__().__hash__()
-
-    def __eq__(self, other):
-        return self.__str__() == other.__str__()
-
-    def num_reachable(self):
-
-        # if a count is already assigned, return it
-        if self.count: return self.count
-
-        # count the number of final nodes that are reachable from this one.
-        # including self
-        count = 0
-        if self.final: count += 1
-        for label, node in self.edges.items():
-            count += node.num_reachable() # recursively thru reachable nodes
-        self.count = count
-        return count
-
-class Dawg:
-
-    def __init__(self):
-
-        self.previous_word = ""
-        self.root = DawgNode()
-
-        # Here is a list of nodes that have not been checked for duplication.
-        self.unchecked_nodes = []
-
-        # Here is a list of unique nodes that have been checked for
-        # duplication.
-        self.minimized_nodes = {}
-
-        # Here is the data associated with all the nodes
+data associated with all the nodes
         self.data = []
 
     def insert(self, word, data):
@@ -90,14 +35,13 @@ class Dawg:
 
         # find common prefix between word and previous word
         common_prefix = 0
-        # loop over shorter word
+        # loop over shorter word, break when letters are different
         for i in range(min(len(word), len(self.previous_word))):
             if word[i] != self.previous_word[i]: break
             common_prefix += 1
 
-        # Check the unchecked_nodes for redundant nodes, proceeding from last
-        # one down to the common prefix size. Then truncate the list at that
-        # point.
+        # Check the unchecked_nodes for redundant nodes, from last one down to
+        # the common prefix size. Then truncate the list at that point.
         self._minimize(common_prefix)
         self.data.append(data)
 
@@ -108,7 +52,9 @@ class Dawg:
         else:
             node = self.unchecked_nodes[-1][2]
 
-        # create new node, add to edges & to list of unchecked nodes
+        # create new node, add:
+        # - to edges, &
+        # - to list of unchecked nodes,
         # move to new node and repeat until end of word
         for letter in word[common_prefix:]:
             next_node = DawgNode()
@@ -144,15 +90,12 @@ class Dawg:
             if letter not in node.edges: return None
             for label, child in sorted(node.edges.items()):
                 if label == letter:
-                    # seen a word ending, save
-                    if node.final: skipped += 1
-                    # move to next node
-                    node = child
+                    if node.final: skipped += 1 # seen a word ending, save
+                    node = child # move to next node
                     break # > move back to letter loop in word
                 skipped += child.count
-
         if node.final:
-            return self.data[skipped] 
+            return self.data[skipped]
 
     def node_count(self):
         return len(self.minimized_nodes)
@@ -166,20 +109,27 @@ class Dawg:
     def display(self):
         stack = [self.root]
         done = set()
+        total = self.node_count()
         while stack:
             node = stack.pop()
             if node.id in done: continue
             done.add(node.id)
-            print("{}: ({})".format(node.id, node))
+            print('node: {:{}} | as string: ({})'.format(node.id, len(str(total)), node))
             for label, child in node.edges.items():
-                print("    {} goto {}".format(label, child.id))
+                print(" - {} -> goto {}".format(label, child.id))
                 stack.append(child)
+            if not node.edges.items():
+                print(" - end of word!")
+            print()
 
 if __name__ == '__main__':
 
     DICTIONARY = "british-english.txt"
-    # QUERY = sys.argv[1:]
-    QUERY = ["things", "lechs", "eerie"]
+    QUERY = [
+            "things",
+            "lechs",
+            "eerie"
+            ]
 
     dawg = Dawg()
     WordCount = 0
@@ -189,10 +139,24 @@ if __name__ == '__main__':
             words.append(w.rstrip())
     words.sort()
 
+    # words = [
+    #         'abacus',
+    #         'abalone',
+    #         'despair',
+    #         'despondency',
+    #         'eerie',
+    #         'eeries',
+    #         'lechery',
+    #         'thing',
+    #         'things',
+    #         'zulu'
+    #         ]
+
     start = time.time()
     for word in words:
         WordCount += 1
-        # insert all words, using the reversed version as the data associated with it
+        # insert all words, using the reversed version
+        # as the data associated with it
         dawg.insert(word, ''.join(reversed(word)))
         if (WordCount % 100) == 0:
             print("{0}\r".format(WordCount), end="")
@@ -211,6 +175,6 @@ if __name__ == '__main__':
     for word in QUERY:
         result = dawg.lookup(word)
         if result == None:
-            print("{0}? Not in dictionary.".format(word))
+            print("'{0}'? Not in dictionary.".format(word))
         else:
-            print("{0}? In the dictionary and has data {1}".format(word, result))
+            print("'{0}'? In the dictionary and has data {1}".format(word, result))
